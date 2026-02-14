@@ -323,22 +323,17 @@ const updateUserAvatar = asyncHandler(async(req,res) => {
         throw new ApiError(500,"Failed to upload avatar");
     }
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {avatar: avatar.url}
         },
         {new: true}
     ).select("-password -refreshToken")
-    .then((updatedUser) => {
-        return res
+
+    return res
         .status(200)
-        .json(new ApiResponse(200,updatedUser,"Avatar updated successfully"));
-    })
-    .catch((error) => {
-        console.log("Error updating avatar", error);
-        throw new ApiError(500,"Failed to update avatar");
-    })
+        .json(new ApiResponse(200, updatedUser, "Avatar updated successfully"))
 })
 
 const updateUserCoverImage = asyncHandler(async(req,res) => {
@@ -353,22 +348,17 @@ const updateUserCoverImage = asyncHandler(async(req,res) => {
         throw new ApiError(500,"Failed to upload cover image");
     }
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {coverImage: coverImage.url}
         },
         {new: true}
     ).select("-password -refreshToken")
-    .then((updatedUser) => {
-        return res
+
+    return res
         .status(200)
-        .json(new Apiresponse(200,updatedUser,"Cover image updated successfully"));
-    })
-    .catch((error) => {
-        console.log("Error updating cover image", error);
-        throw new Apierror(500,"Failed to update cover image");
-    })
+        .json(new ApiResponse(200, updatedUser, "Cover image updated successfully"))
 })
 
 

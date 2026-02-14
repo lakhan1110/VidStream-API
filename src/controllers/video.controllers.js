@@ -28,22 +28,37 @@ const uploadVideo = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to upload files to Cloudinary")
     }
 
-    // Create video document
-    const video = await Video.create({
-        videoFile: videoFile.url,
-        thumbnail: thumbnail.url,
-        title: title.trim(),
-        description: description?.trim() || "",
-        duration: videoFile.duration || 0,
-        owner: req.user._id,
-        isPublished: false
-    })
+    try {
+        // Create video document
+        const video = await Video.create({
+            videoFile: videoFile.url,
+            thumbnail: thumbnail.url,
+            title: title.trim(),
+            description: description?.trim() || "",
+            duration: videoFile.duration || 0,
+            owner: req.user._id,
+            isPublished: false
+        })
 
-    const createdVideo = await Video.findById(video._id)
+        const createdVideo = await Video.findById(video._id)
 
-    return res
-        .status(201)
-        .json(new ApiResponse(201, createdVideo, "Video uploaded successfully"))
+        return res
+            .status(201)
+            .json(new ApiResponse(201, createdVideo, "Video uploaded successfully"))
+
+    } catch (error) {
+        // If DB creation fails, delete files from Cloudinary
+        console.log("Video creation failed, cleaning up Cloudinary files...", error)
+        
+        if (videoFile?.public_id) {
+            await deleteFromCloudinary(videoFile.public_id)
+        }
+        if (thumbnail?.public_id) {
+            await deleteFromCloudinary(thumbnail.public_id)
+        }
+
+        throw new ApiError(500, "Failed to save video details. Files cleaned up from server.")
+    }
 })
 
 // Get video by ID
